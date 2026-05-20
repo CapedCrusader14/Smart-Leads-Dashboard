@@ -146,7 +146,7 @@ const Dashboard = () => {
 
     window.open(
 
-      "http://localhost:5000/api/leads/export/csv",
+      "https://smart-leads-dashboard-api-ywtj.onrender.com/api/leads/export/csv",
 
       "_blank"
 
