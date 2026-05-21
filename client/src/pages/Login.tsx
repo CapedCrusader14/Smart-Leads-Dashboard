@@ -42,6 +42,11 @@ const Login = () => {
 
 
 
+      console.log(response.data);
+
+
+
+
       localStorage.setItem(
 
         "token",
@@ -59,7 +64,14 @@ const Login = () => {
 
       console.log(error);
 
-      alert("Login failed");
+
+
+
+      alert(
+
+        "Login failed"
+
+      );
 
     }
 
