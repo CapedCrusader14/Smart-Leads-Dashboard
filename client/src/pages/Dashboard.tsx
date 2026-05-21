@@ -1,19 +1,19 @@
 import {
+
   useEffect,
+
   useState
+
 } from "react";
 
 import api from "../api/axios";
 
 import LeadsTable from "../components/LeadsTable";
 
-import CreateLeadForm from "../components/CreateLeadForm";
-
-import useDebounce from "../hooks/useDebounce";
-
 const Dashboard = () => {
 
-  // LEADS DATA
+
+
 
   const [leads, setLeads] =
     useState<any[]>([]);
@@ -21,18 +21,17 @@ const Dashboard = () => {
 
 
 
-  // SEARCH
-
   const [search, setSearch] =
     useState("");
 
 
 
 
-  // FILTERS
-
   const [status, setStatus] =
     useState("");
+
+
+
 
   const [source, setSource] =
     useState("");
@@ -40,10 +39,11 @@ const Dashboard = () => {
 
 
 
-  // PAGINATION
-
   const [page, setPage] =
     useState(1);
+
+
+
 
   const [totalPages, setTotalPages] =
     useState(1);
@@ -51,18 +51,24 @@ const Dashboard = () => {
 
 
 
-  // DARK MODE
-
   const [darkMode, setDarkMode] =
-    useState(false);
+    useState(true);
 
 
 
 
-  // DEBOUNCED SEARCH
+  const [formData, setFormData] =
+    useState({
 
-  const debouncedSearch =
-    useDebounce(search, 500);
+      name: "",
+
+      email: "",
+
+      status: "New",
+
+      source: "Website"
+
+    });
 
 
 
@@ -76,20 +82,26 @@ const Dashboard = () => {
       const response =
         await api.get(
 
-          `/leads?search=${debouncedSearch}&status=${status}&source=${source}&page=${page}&sort=latest`
+          `/leads?search=${search}&status=${status}&source=${source}&page=${page}`
 
         );
 
 
 
+
       setLeads(
+
         response.data.leads
+
       );
 
 
 
+
       setTotalPages(
+
         response.data.totalPages
+
       );
 
     } catch (error) {
@@ -103,15 +115,13 @@ const Dashboard = () => {
 
 
 
-  // FETCH ON LOAD / FILTER CHANGE
-
   useEffect(() => {
 
     fetchLeads();
 
   }, [
 
-    debouncedSearch,
+    search,
 
     status,
 
@@ -124,130 +134,171 @@ const Dashboard = () => {
 
 
 
-  // LOGOUT
+  // CREATE LEAD
 
-  const handleLogout = () => {
+  const createLead = async () => {
 
-    localStorage.removeItem(
-      "token"
-    );
+    try {
 
-    window.location.href =
-      "/login";
+      await api.post(
+
+        "/leads",
+
+        formData
+
+      );
+
+
+
+
+      setFormData({
+
+        name: "",
+
+        email: "",
+
+        status: "New",
+
+        source: "Website"
+
+      });
+
+
+
+
+      fetchLeads();
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
 
   };
 
 
 
 
-  // EXPORT CSV
+  // CSV EXPORT
 
- const exportCSV = async () => {
+  const exportCSV = async () => {
 
-  try {
+    try {
 
-    const response =
-      await api.get(
+      const response =
+        await api.get(
 
-        "/leads/export/csv",
+          "/leads/export/csv",
 
-        {
+          {
 
-          responseType: "blob"
+            responseType: "blob"
 
-        }
+          }
+
+        );
+
+
+
+
+      const blob =
+        new Blob(
+
+          [response.data],
+
+          {
+
+            type:
+              "text/csv"
+
+          }
+
+        );
+
+
+
+
+      const url =
+        window.URL.createObjectURL(
+
+          blob
+
+        );
+
+
+
+
+      const link =
+        document.createElement("a");
+
+
+
+
+      link.href = url;
+
+      link.download =
+        "leads.csv";
+
+
+
+
+      document.body.appendChild(
+
+        link
 
       );
 
 
 
 
-    const blob =
-      new Blob(
+      link.click();
 
-        [response.data],
 
-        {
 
-          type:
-            "text/csv"
 
-        }
+      document.body.removeChild(
+
+        link
 
       );
 
 
 
 
-    const url =
-      window.URL.createObjectURL(
+      window.URL.revokeObjectURL(
 
-        blob
+        url
 
       );
 
+    } catch (error) {
 
+      console.log(error);
 
+    }
 
-    const link =
-      document.createElement("a");
-
-
-
-
-    link.href = url;
-
-
-
-
-    link.download =
-      "leads.csv";
+  };
 
 
 
 
-    document.body.appendChild(
+  // LOGOUT
 
-      link
+  const logout = () => {
+
+    localStorage.removeItem(
+
+      "token"
 
     );
 
 
 
 
-    link.click();
+    window.location.href =
+      "/login";
 
-
-
-
-    document.body.removeChild(
-
-      link
-
-    );
-
-
-
-
-    window.URL.revokeObjectURL(
-
-      url
-
-    );
-
-  } catch (error) {
-
-    console.log(error);
-
-    alert(
-
-      "CSV Export Failed"
-
-    );
-
-  }
-
-};
+  };
 
 
 
@@ -258,15 +309,19 @@ const Dashboard = () => {
 
       className={`
 
-        min-h-screen p-6 transition-all duration-300
+        min-h-screen
 
-        ${
+        transition-all
 
-          darkMode
+        duration-300
 
-            ? "bg-black text-white"
+        p-6
 
-            : "bg-gray-100 text-black"
+        ${darkMode
+
+          ? "bg-[#1f1f24] text-white"
+
+          : "bg-gray-100 text-black"
 
         }
 
@@ -274,169 +329,255 @@ const Dashboard = () => {
 
     >
 
-      <div className="max-w-7xl mx-auto">
+
+
+
+      {/* TOP BAR */}
+
+      <div className="flex justify-between items-center mb-8">
+
+        <h1 className="text-5xl font-bold">
+
+          Smart Leads Dashboard
+
+        </h1>
 
 
 
 
-        {/* HEADER */}
-
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div className="flex gap-4">
 
 
 
 
-          <h1 className="text-3xl font-bold">
+          <button
 
-            Smart Leads Dashboard
+            onClick={() =>
 
-          </h1>
+              setDarkMode(
 
+                !darkMode
 
+              )
 
+            }
 
-          <div className="flex flex-wrap gap-3">
+            className="bg-blue-600 px-5 py-3 rounded-lg"
 
+          >
 
+            Toggle Theme
 
-
-            <button
-
-              onClick={() =>
-
-                setDarkMode(!darkMode)
-
-              }
-
-              className="bg-blue-600 text-white px-4 py-2 rounded"
-
-            >
-
-              Toggle Theme
-
-            </button>
+          </button>
 
 
 
 
-            <button
+          <button
 
-              onClick={exportCSV}
+            onClick={exportCSV}
 
-              className="bg-green-600 text-white px-4 py-2 rounded"
+            className="bg-green-600 px-5 py-3 rounded-lg"
 
-            >
+          >
 
-              Export CSV
+            Export CSV
 
-            </button>
-
-
+          </button>
 
 
-            <button
 
-              onClick={handleLogout}
 
-              className="bg-black text-white px-4 py-2 rounded"
+          <button
 
-            >
+            onClick={logout}
 
-              Logout
+            className="bg-black px-5 py-3 rounded-lg"
 
-            </button>
+          >
 
-          </div>
+            Logout
+
+          </button>
 
         </div>
 
-
-
-
-        {/* CREATE LEAD FORM */}
-
-        <CreateLeadForm
-
-          fetchLeads={fetchLeads}
-
-        />
+      </div>
 
 
 
 
-        {/* FILTERS */}
+      {/* CREATE LEAD */}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div
+
+        className={`
+
+          p-6
+
+          rounded-xl
+
+          shadow-lg
+
+          mb-8
+
+          ${darkMode
+
+            ? "bg-[#121212]"
+
+            : "bg-white"
+
+          }
+
+        `}
+
+      >
 
 
 
 
-          {/* SEARCH */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+
+
 
           <input
 
             type="text"
 
-            placeholder="Search leads..."
+            placeholder="Lead Name"
 
-            value={search}
+            value={formData.name}
 
             onChange={(e) =>
 
-              setSearch(e.target.value)
+              setFormData({
+
+                ...formData,
+
+                name: e.target.value
+
+              })
 
             }
 
-            className="p-3 border rounded text-black"
+            className={`
+
+              p-4
+
+              rounded-lg
+
+              border
+
+              ${darkMode
+
+                ? "bg-[#3a3a3a] text-white border-gray-600"
+
+                : "bg-white text-black border-gray-300"
+
+              }
+
+            `}
 
           />
 
 
 
 
-          {/* STATUS FILTER */}
+          <input
 
-          <select
+            type="email"
 
-            value={status}
+            placeholder="Lead Email"
+
+            value={formData.email}
 
             onChange={(e) =>
 
-              setStatus(e.target.value)
+              setFormData({
+
+                ...formData,
+
+                email: e.target.value
+
+              })
 
             }
 
-            className="p-3 border rounded text-black"
+            className={`
+
+              p-4
+
+              rounded-lg
+
+              border
+
+              ${darkMode
+
+                ? "bg-[#3a3a3a] text-white border-gray-600"
+
+                : "bg-white text-black border-gray-300"
+
+              }
+
+            `}
+
+          />
+
+
+
+
+          <select
+
+            value={formData.status}
+
+            onChange={(e) =>
+
+              setFormData({
+
+                ...formData,
+
+                status: e.target.value
+
+              })
+
+            }
+
+            className={`
+
+              p-4
+
+              rounded-lg
+
+              border
+
+              ${darkMode
+
+                ? "bg-[#3a3a3a] text-white border-gray-600"
+
+                : "bg-white text-black border-gray-300"
+
+              }
+
+            `}
 
           >
 
-            <option value="">
-
-              All Status
-
-            </option>
-
-            <option value="New">
+            <option>
 
               New
 
             </option>
 
-            <option value="Contacted">
+            <option>
 
               Contacted
 
             </option>
 
-            <option value="Qualified">
+            <option>
 
               Qualified
-
-            </option>
-
-            <option value="Lost">
-
-              Lost
 
             </option>
 
@@ -445,43 +586,57 @@ const Dashboard = () => {
 
 
 
-          {/* SOURCE FILTER */}
-
           <select
 
-            value={source}
+            value={formData.source}
 
             onChange={(e) =>
 
-              setSource(e.target.value)
+              setFormData({
+
+                ...formData,
+
+                source: e.target.value
+
+              })
 
             }
 
-            className="p-3 border rounded text-black"
+            className={`
+
+              p-4
+
+              rounded-lg
+
+              border
+
+              ${darkMode
+
+                ? "bg-[#3a3a3a] text-white border-gray-600"
+
+                : "bg-white text-black border-gray-300"
+
+              }
+
+            `}
 
           >
 
-            <option value="">
-
-              All Sources
-
-            </option>
-
-            <option value="Website">
+            <option>
 
               Website
 
             </option>
 
-            <option value="Instagram">
+            <option>
 
-              Instagram
+              LinkedIn
 
             </option>
 
-            <option value="Referral">
+            <option>
 
-              Referral
+              Instagram
 
             </option>
 
@@ -492,75 +647,268 @@ const Dashboard = () => {
 
 
 
-        {/* LEADS TABLE */}
+        <button
 
-        <LeadsTable
+          onClick={createLead}
 
-          leads={leads}
+          className="bg-black text-white w-full mt-5 py-4 rounded-lg"
 
-          fetchLeads={fetchLeads}
+        >
+
+          Create Lead
+
+        </button>
+
+      </div>
+
+
+
+
+      {/* SEARCH + FILTERS */}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+
+
+
+
+        <input
+
+          type="text"
+
+          placeholder="Search leads..."
+
+          value={search}
+
+          onChange={(e) =>
+
+            setSearch(
+
+              e.target.value
+
+            )
+
+          }
+
+          className={`
+
+            p-4
+
+            rounded-lg
+
+            border
+
+            ${darkMode
+
+              ? "bg-[#3a3a3a] text-white border-gray-600"
+
+              : "bg-white text-black border-gray-300"
+
+            }
+
+          `}
 
         />
 
 
 
 
-        {/* PAGINATION */}
+        <select
 
-        <div className="flex items-center justify-center gap-4 mt-6">
+          value={status}
 
+          onChange={(e) =>
 
+            setStatus(
 
+              e.target.value
 
-          <button
+            )
 
-            disabled={page === 1}
+          }
 
-            onClick={() =>
+          className={`
 
-              setPage(page - 1)
+            p-4
 
-            }
+            rounded-lg
 
-            className="bg-black text-white px-4 py-2 rounded disabled:bg-gray-400"
+            border
 
-          >
+            ${darkMode
 
-            Prev
+              ? "bg-[#3a3a3a] text-white border-gray-600"
 
-          </button>
-
-
-
-
-          <span className="font-semibold">
-
-            Page {page} of {totalPages}
-
-          </span>
-
-
-
-
-          <button
-
-            disabled={page === totalPages}
-
-            onClick={() =>
-
-              setPage(page + 1)
+              : "bg-white text-black border-gray-300"
 
             }
 
-            className="bg-black text-white px-4 py-2 rounded disabled:bg-gray-400"
+          `}
 
-          >
+        >
 
-            Next
+          <option value="">
 
-          </button>
+            All Status
 
-        </div>
+          </option>
+
+          <option>
+
+            New
+
+          </option>
+
+          <option>
+
+            Contacted
+
+          </option>
+
+          <option>
+
+            Qualified
+
+          </option>
+
+        </select>
+
+
+
+
+        <select
+
+          value={source}
+
+          onChange={(e) =>
+
+            setSource(
+
+              e.target.value
+
+            )
+
+          }
+
+          className={`
+
+            p-4
+
+            rounded-lg
+
+            border
+
+            ${darkMode
+
+              ? "bg-[#3a3a3a] text-white border-gray-600"
+
+              : "bg-white text-black border-gray-300"
+
+            }
+
+          `}
+
+        >
+
+          <option value="">
+
+            All Sources
+
+          </option>
+
+          <option>
+
+            Website
+
+          </option>
+
+          <option>
+
+            LinkedIn
+
+          </option>
+
+          <option>
+
+            Instagram
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+
+
+      {/* TABLE */}
+
+      <LeadsTable
+
+        leads={leads}
+
+        fetchLeads={fetchLeads}
+
+        darkMode={darkMode}
+
+      />
+
+
+
+
+      {/* PAGINATION */}
+
+      <div className="flex justify-center items-center gap-4 mt-8">
+
+
+
+
+        <button
+
+          disabled={page === 1}
+
+          onClick={() =>
+
+            setPage(page - 1)
+
+          }
+
+          className="bg-gray-400 px-5 py-3 rounded-lg"
+
+        >
+
+          Prev
+
+        </button>
+
+
+
+
+        <span className="font-bold">
+
+          Page {page} of {totalPages}
+
+        </span>
+
+
+
+
+        <button
+
+          disabled={page === totalPages}
+
+          onClick={() =>
+
+            setPage(page + 1)
+
+          }
+
+          className="bg-gray-400 px-5 py-3 rounded-lg"
+
+        >
+
+          Next
+
+        </button>
 
       </div>
 
