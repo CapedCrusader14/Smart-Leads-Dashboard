@@ -2,11 +2,9 @@ import express from "express";
 
 import {
 
-  createLead,
-
   getLeads,
 
-  getSingleLead,
+  createLead,
 
   updateLead,
 
@@ -18,13 +16,27 @@ import {
 
 import {
 
-  protect,
-
-  authorize
+  protect
 
 } from "../middleware/authMiddleware";
 
 const router = express.Router();
+
+
+
+
+// GET ALL LEADS
+
+router.get(
+
+  "/",
+
+  protect,
+
+  getLeads
+
+);
+
 
 
 
@@ -42,20 +54,6 @@ router.post(
 
 
 
-// GET ALL LEADS
-// SEARCH + FILTER + PAGINATION
-
-router.get(
-
-  "/",
-
-  protect,
-
-  getLeads
-
-);
-
-
 
 // EXPORT CSV
 
@@ -69,19 +67,6 @@ router.get(
 
 );
 
-
-
-// GET SINGLE LEAD
-
-router.get(
-
-  "/:id",
-
-  protect,
-
-  getSingleLead
-
-);
 
 
 
@@ -99,8 +84,8 @@ router.put(
 
 
 
+
 // DELETE LEAD
-// ADMIN ONLY
 
 router.delete(
 
@@ -108,11 +93,10 @@ router.delete(
 
   protect,
 
-  authorize("admin"),
-
   deleteLead
 
 );
+
 
 
 
