@@ -3,12 +3,9 @@ import axios from "axios";
 const api = axios.create({
 
   baseURL:
-    "https://smart-leads-dashboard-api-ywtj.onrender.com/api"
+    "https://YOUR_RENDER_BACKEND.onrender.com/api"
 
 });
-
-
-
 
 api.interceptors.request.use(
 
@@ -17,9 +14,6 @@ api.interceptors.request.use(
     const token =
       localStorage.getItem("token");
 
-
-
-
     if (token) {
 
       config.headers.Authorization =
@@ -27,16 +21,10 @@ api.interceptors.request.use(
 
     }
 
-
-
-
     return config;
 
   }
 
 );
-
-
-
 
 export default api;
