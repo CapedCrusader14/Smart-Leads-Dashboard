@@ -6,13 +6,17 @@ interface Props {
 
   fetchLeads: () => void;
 
+  darkMode: boolean;
+
 }
 
 const LeadsTable = ({
 
   leads,
 
-  fetchLeads
+  fetchLeads,
+
+  darkMode
 
 }: Props) => {
 
@@ -75,48 +79,103 @@ const LeadsTable = ({
 
   return (
 
-    <div className="bg-white rounded-lg shadow overflow-x-auto">
+    <div
 
-      <table className="w-full min-w-[900px]">
+      className={`
+
+        rounded-xl
+
+        overflow-x-auto
+
+        shadow-lg
+
+        ${darkMode
+
+          ? "bg-[#121212]"
+
+          : "bg-white"
+
+        }
+
+      `}
+
+    >
 
 
 
 
-        <thead className="bg-gray-200">
+      <table className="w-full min-w-[1000px]">
+
+
+
+
+        <thead
+
+          className={`
+
+            ${darkMode
+
+              ? "bg-[#2a2a2a] text-white"
+
+              : "bg-gray-200 text-black"
+
+            }
+
+          `}
+
+        >
+
+
+
 
           <tr>
 
-            <th className="p-3 text-left">
+            <th className="p-5 text-left text-lg font-semibold">
 
               Name
 
             </th>
 
-            <th className="p-3 text-left">
+
+
+
+            <th className="p-5 text-left text-lg font-semibold">
 
               Email
 
             </th>
 
-            <th className="p-3 text-left">
+
+
+
+            <th className="p-5 text-left text-lg font-semibold">
 
               Status
 
             </th>
 
-            <th className="p-3 text-left">
+
+
+
+            <th className="p-5 text-left text-lg font-semibold">
 
               Source
 
             </th>
 
-            <th className="p-3 text-left">
+
+
+
+            <th className="p-5 text-left text-lg font-semibold">
 
               Created At
 
             </th>
 
-            <th className="p-3 text-left">
+
+
+
+            <th className="p-5 text-left text-lg font-semibold">
 
               Actions
 
@@ -139,14 +198,44 @@ const LeadsTable = ({
 
                 key={lead._id}
 
-                className="border-t"
+                className={`
+
+                  border-t
+
+                  transition-all
+
+                  ${darkMode
+
+                    ? "border-gray-700 hover:bg-[#1f1f24]"
+
+                    : "border-gray-200 hover:bg-gray-50"
+
+                  }
+
+                `}
 
               >
 
 
 
 
-                <td className="p-3">
+                <td
+
+                  className={`
+
+                    p-5
+
+                    ${darkMode
+
+                      ? "text-white"
+
+                      : "text-black"
+
+                    }
+
+                  `}
+
+                >
 
                   {lead.name}
 
@@ -155,7 +244,23 @@ const LeadsTable = ({
 
 
 
-                <td className="p-3">
+                <td
+
+                  className={`
+
+                    p-5
+
+                    ${darkMode
+
+                      ? "text-white"
+
+                      : "text-black"
+
+                    }
+
+                  `}
+
+                >
 
                   {lead.email}
 
@@ -164,7 +269,25 @@ const LeadsTable = ({
 
 
 
-                <td className="p-3">
+                <td
+
+                  className={`
+
+                    p-5
+
+                    font-medium
+
+                    ${darkMode
+
+                      ? "text-white"
+
+                      : "text-black"
+
+                    }
+
+                  `}
+
+                >
 
                   {lead.status}
 
@@ -173,7 +296,23 @@ const LeadsTable = ({
 
 
 
-                <td className="p-3">
+                <td
+
+                  className={`
+
+                    p-5
+
+                    ${darkMode
+
+                      ? "text-white"
+
+                      : "text-black"
+
+                    }
+
+                  `}
+
+                >
 
                   {lead.source}
 
@@ -182,7 +321,23 @@ const LeadsTable = ({
 
 
 
-                <td className="p-3">
+                <td
+
+                  className={`
+
+                    p-5
+
+                    ${darkMode
+
+                      ? "text-white"
+
+                      : "text-black"
+
+                    }
+
+                  `}
+
+                >
 
                   {
 
@@ -199,7 +354,10 @@ const LeadsTable = ({
 
 
 
-                <td className="p-3">
+                <td className="p-5">
+
+
+
 
                   <button
 
@@ -213,7 +371,7 @@ const LeadsTable = ({
 
                     }
 
-                    className="bg-red-500 text-white px-3 py-1 rounded"
+                    className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg transition-all"
 
                   >
 

@@ -99,8 +99,6 @@ const Login = () => {
         </h1>
 
 
-
-
         <input
 
           {...register("email")}
