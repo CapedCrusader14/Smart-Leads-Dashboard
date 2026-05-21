@@ -3,7 +3,7 @@ import axios from "axios";
 const api = axios.create({
 
   baseURL:
-    "https://smart-leads-dashboard-api-ywtj.onrender.com"
+    "https://smart-leads-dashboard-api-ywtj.onrender.com/api"
 
 });
 
