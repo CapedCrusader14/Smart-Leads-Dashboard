@@ -1,72 +1,100 @@
-import { Request, Response } from "express";
+import {
+
+  Request,
+
+  Response
+
+} from "express";
+
 import Lead from "../models/Lead";
 
-import {
-  createObjectCsvStringifier
-} from "csv-writer";
 
 
 
-// CREATE LEAD
-
-export const createLead = async (
-  req: Request,
-  res: Response
-) => {
-
-  try {
-
-    const lead = await Lead.create(req.body);
-
-    res.status(201).json(lead);
-
-  } catch (error) {
-
-    console.log(error);
-
-    res.status(500).json({
-      message: "Server Error"
-    });
-
-  }
-
-};
-
-
-
-// GET ALL LEADS
-// SEARCH + FILTER + SORT + PAGINATION
+// GET LEADS
 
 export const getLeads = async (
+
   req: Request,
+
   res: Response
-) => {
+
+): Promise<void> => {
 
   try {
 
-    const {
-      status,
-      source,
-      search,
-      sort,
-      page = "1"
-    } = req.query as {
-      status?: string;
-      source?: string;
-      search?: string;
-      sort?: string;
-      page?: string;
-    };
+    const search =
+      req.query.search as string;
 
 
 
-    // DYNAMIC QUERY OBJECT
+
+    const status =
+      req.query.status as string;
+
+
+
+
+    const source =
+      req.query.source as string;
+
+
+
+
+    const page =
+      Number(req.query.page) || 1;
+
+
+
+
+    const limit = 5;
+
+
+
 
     const query: any = {};
 
 
 
-    // FILTER BY STATUS
+
+    // SEARCH
+
+    if (search) {
+
+      query.$or = [
+
+        {
+
+          name: {
+
+            $regex: search,
+
+            $options: "i"
+
+          }
+
+        },
+
+        {
+
+          email: {
+
+            $regex: search,
+
+            $options: "i"
+
+          }
+
+        }
+
+      ];
+
+    }
+
+
+
+
+    // FILTERS
 
     if (status) {
 
@@ -76,7 +104,6 @@ export const getLeads = async (
 
 
 
-    // FILTER BY SOURCE
 
     if (source) {
 
@@ -86,105 +113,51 @@ export const getLeads = async (
 
 
 
-    // SEARCH BY NAME OR EMAIL
 
-    if (search) {
-
-      query.$or = [
-
-        {
-          name: {
-            $regex: search,
-            $options: "i"
-          }
-        },
-
-        {
-          email: {
-            $regex: search,
-            $options: "i"
-          }
-        }
-
-      ];
-
-    }
+    const total =
+      await Lead.countDocuments(query);
 
 
 
-    // SORTING
 
-    let sortOption = {};
+    const leads =
+      await Lead.find(query)
 
+        .sort({
 
+          createdAt: -1
 
-    // LATEST FIRST
+        })
 
-    if (sort === "latest") {
+        .skip(
 
-      sortOption = {
-        createdAt: -1
-      };
+          (page - 1) * limit
 
-    }
+        )
 
-
-
-    // OLDEST FIRST
-
-    if (sort === "oldest") {
-
-      sortOption = {
-        createdAt: 1
-      };
-
-    }
+        .limit(limit);
 
 
 
-    // PAGINATION
-
-    const limit = 10;
-
-    const skip = (Number(page) - 1) * limit;
-
-
-
-    // FETCH LEADS
-
-    const leads = await Lead.find(query)
-      .sort(sortOption)
-      .skip(skip)
-      .limit(limit);
-
-
-
-    // TOTAL COUNT
-
-    const total = await Lead.countDocuments(query);
-
-
-
-    // RESPONSE
 
     res.status(200).json({
 
-      total,
+      leads,
 
-      currentPage: Number(page),
+      currentPage: page,
 
-      totalPages: Math.ceil(total / limit),
-
-      leads
+      totalPages:
+        Math.ceil(total / limit)
 
     });
 
   } catch (error) {
 
-    console.log(error);
-
     res.status(500).json({
-      message: "Server Error"
+
+      message:
+        "Server Error"
+
     });
 
   }
@@ -193,115 +166,134 @@ export const getLeads = async (
 
 
 
-// GET SINGLE LEAD
 
-export const getSingleLead = async (
+// CREATE LEAD
+
+export const createLead = async (
+
   req: Request,
+
   res: Response
-) => {
+
+): Promise<void> => {
 
   try {
 
-    const lead = await Lead.findById(
-      req.params.id
+    const lead =
+      await Lead.create(req.body);
+
+
+
+
+    res.status(201).json(
+
+      lead
+
     );
-
-    if (!lead) {
-
-      return res.status(404).json({
-        message: "Lead not found"
-      });
-
-    }
-
-    res.status(200).json(lead);
 
   } catch (error) {
 
-    console.log(error);
-
     res.status(500).json({
-      message: "Server Error"
+
+      message:
+        "Server Error"
+
     });
 
   }
 
 };
+
 
 
 
 // UPDATE LEAD
 
 export const updateLead = async (
+
   req: Request,
+
   res: Response
-) => {
+
+): Promise<void> => {
 
   try {
 
-    const lead = await Lead.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true
-      }
+    const updatedLead =
+      await Lead.findByIdAndUpdate(
+
+        req.params.id,
+
+        req.body,
+
+        {
+
+          new: true
+
+        }
+
+      );
+
+
+
+
+    res.status(200).json(
+
+      updatedLead
+
     );
-
-    if (!lead) {
-
-      return res.status(404).json({
-        message: "Lead not found"
-      });
-
-    }
-
-    res.status(200).json(lead);
 
   } catch (error) {
 
-    console.log(error);
-
     res.status(500).json({
-      message: "Server Error"
+
+      message:
+        "Server Error"
+
     });
 
   }
 
 };
+
 
 
 
 // DELETE LEAD
 
 export const deleteLead = async (
+
   req: Request,
+
   res: Response
-) => {
+
+): Promise<void> => {
 
   try {
 
-    const lead = await Lead.findByIdAndDelete(
+    await Lead.findByIdAndDelete(
+
       req.params.id
+
     );
 
-    if (!lead) {
 
-      return res.status(404).json({
-        message: "Lead not found"
-      });
 
-    }
 
     res.status(200).json({
-      message: "Lead deleted successfully"
+
+      message:
+        "Lead deleted"
+
     });
 
   } catch (error) {
 
-    console.log(error);
-
     res.status(500).json({
-      message: "Server Error"
+
+      message:
+        "Server Error"
+
     });
 
   }
@@ -310,76 +302,83 @@ export const deleteLead = async (
 
 
 
-// EXPORT LEADS CSV
+
+// EXPORT CSV
 
 export const exportLeadsCSV = async (
+
   req: Request,
+
   res: Response
-) => {
+
+): Promise<void> => {
 
   try {
 
-    const leads = await Lead.find();
+    const leads =
+      await Lead.find();
 
 
 
-    const csvStringifier =
-      createObjectCsvStringifier({
 
-        header: [
-
-          {
-            id: "name",
-            title: "NAME"
-          },
-
-          {
-            id: "email",
-            title: "EMAIL"
-          },
-
-          {
-            id: "status",
-            title: "STATUS"
-          },
-
-          {
-            id: "source",
-            title: "SOURCE"
-          }
-
-        ]
-
-      });
+    let csv =
+      "Name,Email,Status,Source,Created At\n";
 
 
 
-    const header =
-      csvStringifier.getHeaderString();
 
-    const records =
-      csvStringifier.stringifyRecords(leads);
+    leads.forEach((lead: any) => {
 
-    const csvData =
-      header + records;
+      csv +=
+
+        `${lead.name},` +
+
+        `${lead.email},` +
+
+        `${lead.status},` +
+
+        `${lead.source},` +
+
+        `${new Date(
+
+          lead.createdAt
+
+        ).toLocaleString()}\n`;
+
+    });
+
 
 
 
     res.header(
+
       "Content-Type",
+
       "text/csv"
+
     );
 
-    res.attachment("leads.csv");
 
-    return res.send(csvData);
+
+
+    res.attachment(
+
+      "leads.csv"
+
+    );
+
+
+
+
+    res.send(csv);
 
   } catch (error) {
 
-    console.log(error);
-
     res.status(500).json({
-      message: "Server Error"
+
+      message:
+        "Server Error"
+
     });
 
   }
