@@ -142,17 +142,112 @@ const Dashboard = () => {
 
   // EXPORT CSV
 
-  const exportCSV = () => {
+ const exportCSV = async () => {
 
-    window.open(
+  try {
 
-      "https://smart-leads-dashboard-api-ywtj.onrender.com/api/leads/export/csv",
+    const response =
+      await api.get(
 
-      "_blank"
+        "/leads/export/csv",
+
+        {
+
+          responseType: "blob"
+
+        }
+
+      );
+
+
+
+
+    const blob =
+      new Blob(
+
+        [response.data],
+
+        {
+
+          type:
+            "text/csv"
+
+        }
+
+      );
+
+
+
+
+    const url =
+      window.URL.createObjectURL(
+
+        blob
+
+      );
+
+
+
+
+    const link =
+      document.createElement("a");
+
+
+
+
+    link.href = url;
+
+
+
+
+    link.download =
+      "leads.csv";
+
+
+
+
+    document.body.appendChild(
+
+      link
 
     );
 
-  };
+
+
+
+    link.click();
+
+
+
+
+    document.body.removeChild(
+
+      link
+
+    );
+
+
+
+
+    window.URL.revokeObjectURL(
+
+      url
+
+    );
+
+  } catch (error) {
+
+    console.log(error);
+
+    alert(
+
+      "CSV Export Failed"
+
+    );
+
+  }
+
+};
 
 
 
